@@ -10,7 +10,7 @@ def hello_world():
 
 @app.route('/')
 def landing():
-    return render_template('/templates/index.html')
+    return render_template('index.html')
     
 @app.route('/service', methods=['GET'])
 def service():
