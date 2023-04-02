@@ -1,0 +1,1 @@
+window.alert('Js working fine')

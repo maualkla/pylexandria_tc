@@ -9,7 +9,7 @@ def hello_world():
     return 'Hello, World!'
 
 @app.route('/')
-def hello_world():
+def landing():
     return render_template('index.html')
     
 @app.route('/service', methods=['GET'])
