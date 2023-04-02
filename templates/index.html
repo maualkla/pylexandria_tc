@@ -4,11 +4,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Adminde Time Card</title>
-    <link rel="stylesheet" href="/style.css">
-    <script src="/funct.js"></script>
+    <link rel="stylesheet" href="../static/style.css">
+    <script src="../static/funct.js"></script>
+    <link rel="icon" type="" href="../assets/tc_logo.ico">
 </head>
 <body>
-    <h1>Welcome to Adminde Time Card</h1>
-    <h2>Check this out!</h2>
+    <div class="container">
+        <!-- Navbar section -->
+        <div class="navbar">
+           <img src="../assets/tc_logo.png" alt="Logo" class="navbar-logo">
+           <ul class="navbar-menu">
+               <li><a href="#">Start Now</a></li>
+               <li><a href="#">Documentation</a></li>
+               <li><a href="#">Developers API</a></li>
+               <li><a href="#">Pricing</a></li>
+               <li><a href="#">About us</a></li>
+           </ul>
+           <button class="navbar-button">Log in</button>
+       </div>
+
+       <!-- Hero section -->
+       <div class="hero">
+          <div class="hero-left">
+              <h1 class="hero-title">Let your team be on time every time.</h1>
+              <p class="hero-subtitle">The easiest way to track yout teams working time.</p>
+              <form class="hero-form">
+                  <input type="email" placeholder="Enter your email" class="hero-input" required>
+                  <button type="submit" class="hero-submit">Get started</button>
+              </form>
+          </div>
+          <div class="hero-right">
+              <img src="../assets/clock_image_stock.jpg">
+          </div>
+       </div>
+    </div>
 </body>
 </html>
