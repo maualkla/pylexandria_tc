@@ -2,6 +2,11 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    
+}
+
+body{
+    background-image: url("clock_image_stock.jpg");
 }
 
 .container {
@@ -33,7 +38,7 @@
 
 .navbar-menu a {
     text-decoration: none;
-    color: #333333;
+    color: #fff;
     font-weight: bold;
 }
 
@@ -69,13 +74,13 @@
 .hero-title {
     font-size: 48px;
     font-weight: bold;
-    color: #333333;
+    color: #fff;
     margin-bottom: 20px;
 }
 
 .hero-subtitle {
     font-size: 24px;
-    color: #666666;
+    color: #fff;
     margin-bottom: 40px;
 }
 
