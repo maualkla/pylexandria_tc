@@ -6,7 +6,11 @@
 }
 
 body{
-    background-image: url("clock_image_stock.jpg");
+    background-image: url("bg_v2.jpg");
+    background-color: #edf0fa;
+    background-position: center;
+    background-size: cover;
+
 }
 
 .container {
@@ -20,6 +24,7 @@ body{
     justify-content: space-between;
     background-color: #f0f0f0;
     padding: 10px 20px;
+    opacity: 0.5;
 }
 
 .navbar-logo {
