@@ -6,11 +6,11 @@
 }
 
 body{
-    background-image: url("bg_v2.jpg");
+    /*background-image: url("bg_v2.jpg");*/
     background-color: #edf0fa;
-    background-position: center;
-    background-size: cover;
-
+    /*background-position: center; */
+    background-size: cover; 
+    background-attachment: fixed;
 }
 
 .container {
