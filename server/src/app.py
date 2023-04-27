@@ -16,10 +16,16 @@ def landing():
 @app.route('/service', methods=['GET'])
 def service():
     data = request.get_json()
-    if data is None:
-        return jsonify({})
+    if data:
+        return jsonify({
+            "status": "connected",
+            "code": 200
+        })
     else:
-        return jsonify(data)
+        return jsonify({
+            "status": "Error",
+            "code": 500
+        })
 
 if __name__ == '__main__':
     app.run(debug=True, port=int(os.envirom.get('PORT', 8080)))
