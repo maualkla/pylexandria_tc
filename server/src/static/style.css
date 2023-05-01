@@ -36,10 +36,10 @@
         #m_buttons{
             padding-left: 5%;
         }
-        #B_Register{
+        #M_Register{
             font-size: 180%;
         }
-        #B_Login{
+        #M_Login{
             color: #49547B;
             font-size: 180%;
         }
@@ -54,6 +54,10 @@
         #bot_message{
             padding: 5%;
             text-align: left;
+        }
+        a{
+            color: white;
+            font-size: 90%;
         }
   }
 
