@@ -1,13 +1,22 @@
 ## Sample code
 
 from flask import Flask, jsonify, request, render_template
+## Import firebase object
+from firebase import firebase
+from firebase_admin import credentials, firestore, initialize_app
 import os
 
 app = Flask(__name__)
 
+
+## Get data from our firebase realtime db
+firebase = firebase.FirebaseApplication('https://adminde-tc-default-rtdb.firebaseio.com/', None)
+
 @app.route('/helloworld')
 def hello_world():
-    return 'Hello, World!'
+    ##print(firebase.get('/users', None))
+    result = firebase.get('/users', None)
+    return str(result)
 
 @app.route('/')
 def landing():
