@@ -19,47 +19,6 @@ default_app = initialize_app(cred)
 db = firestore.client()
 users_ref = db.collection('users')
 
-## @TO_BE_DELETED 
-# sample helloworld
-@app.route('/helloworld')
-def hello_world():
-    import requests
-
-    url = 'http://localhost:5000/vlogin'
-    data = {
-        "user": "maualkla",
-        "email": "mauricio@adminde.com",
-        "password": "helloadminde2023"
-        }
-    headers = {'Content-type': 'application/json'}
-
-    response = requests.post(url, json=data, headers=headers)
-    print(response)
-    ##print(response.json())
-    return 'Hello World!'
-
-## @TO_BE_DELETED
-# Landing page
-@app.route('/')
-def landing():
-    return render_template('index.html')
-
-## @TO_BE_DELETED
-# Sample service
-@app.route('/service', methods=['GET'])
-def service():
-    data = request.get_json()
-    if data:
-        return jsonify({
-            "status": "connected",
-            "code": 200
-        })
-    else:
-        return jsonify({
-            "status": "Error",
-            "code": 500
-        })
-
 ## Login service    
 @app.route('/vlogin', methods=['POST'])
 def vlogin():
@@ -86,7 +45,10 @@ def vsignup():
         return {"status": "An error Occurred", 
                 "error": e}
 
-
+## API Status
+@app.route('/status')
+def status():
+    return "Running fine"
 
 if __name__ == '__main__':
     app.run(debug=True, port=int(os.envirom.get('PORT', 8080)))
