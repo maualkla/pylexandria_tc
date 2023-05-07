@@ -66,22 +66,12 @@ def vlogin():
     try:
         email = request.json['email']
         password = request.json['password']
-        print(email, password)
-
         user = users_ref.document(email).get()
-        print(user.to_dict())
-        print('Lets dict it')
         user = user.to_dict()
-        ##print(usable['pcode'])
-        print(user['pcode'])
-        print(' if pass is same to pcode')
         if user['pcode'] == password:
             return jsonify({"status": "Successfully Logged"}), 200
         else: 
             return jsonify({"status": "User or password not match"}), 401
-
-        ##return jsonify(user.to_dict()),200
-        ##return {"status": "true"}
     except Exception as e: 
         return jsonify({"status": "Error"}), 500
 
