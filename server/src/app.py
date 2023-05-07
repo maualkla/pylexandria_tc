@@ -1,13 +1,14 @@
-## Sample code
+## Flask API for adminde-tc project.
+## Pylexandria Project.
+## Coded by: Mauricio Alcala (@maualkla)
+## Date: May 2023.
+## More info at @intmau in twitter or in http://maualkla.com
+## Description: API for the services required by the adminde-tc proyect.
 
 from flask import Flask, jsonify, request, render_template
 
 
-## Import firebase object
-from firebase_admin import credentials, firestore, initialize_app
-from firebase import firebase
-
-import os   ##, pyrebase
+import os 
 
 app = Flask(__name__)
 
@@ -25,25 +26,20 @@ config = {
         "measurementId": "G-VCBNFR07G2"
     }
 
-####
-
-## Get data from our firebase realtime db
-##firebase = firebase.FirebaseApplication('https://adminde-tc-default-rtdb.firebaseio.com/', None)
-
-## sample helloworld
+## @TO_BE_DELETED 
+# sample helloworld
 @app.route('/helloworld')
 def hello_world():
-    ##print(firebase.get('/users', None))
-    ##result = firebase.get('/users', None)
-    ##return str(result)
-    return 'Hello World!'
+     return 'Hello World!'
 
-## Landing page
+## @TO_BE_DELETED
+# Landing page
 @app.route('/')
 def landing():
     return render_template('index.html')
 
-## Sample service
+## @TO_BE_DELETED
+# Sample service
 @app.route('/service', methods=['GET'])
 def service():
     data = request.get_json()
@@ -61,32 +57,12 @@ def service():
 ## Login service    
 @app.route('/vlogin', methods=['POST'])
 def vlogin():
-    """ ## Old code
-    data = request.get_json()
-    print(data)
-    result = firebase.get('/users', None)
-    result[0]
-    if data['user'] == 'maualkla' and data['password'] == 'hola':
-        return {"status": "loged successfull"}
-    else:
-        return {"status": "user not found"}
-    """
-    ##fbinit = initialize_app(config)
-    ##print(fbinit)
+   
     return {"status": "true"}
-
 
 
 @app.route('/vsignup', methods=['POST'])
 def vsignup():
-    """
-    data = request.get_json()
-    print(data)
-    firebase = pyrebase.initialize_app(config)
-    auth = firebase.auth()
-    user = auth.create_user_with_email_and_password(data['email'], data['password'])
-    print(user)
-    """
 
     return {"status": "true"}
 
