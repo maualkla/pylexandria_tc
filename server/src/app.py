@@ -19,19 +19,6 @@ default_app = initialize_app(cred)
 db = firestore.client()
 users_ref = db.collection('users')
 
-### Objects
-
-config = {
-        "apiKey": "AIzaSyDv5ePfMX3CgKRsRllNhTDw04YaS_uEaok",
-        "authDomain": "adminde-tc.firebaseapp.com",
-        "databaseURL": "https://adminde-tc-default-rtdb.firebaseio.com",
-        "projectId": "adminde-tc",
-        "storageBucket": "adminde-tc.appspot.com",
-        "messagingSenderId": "78456937956",
-        "appId": "1:78456937956:web:6a9cb05e437dcfcb117bf1",
-        "measurementId": "G-VCBNFR07G2"
-    }
-
 ## @TO_BE_DELETED 
 # sample helloworld
 @app.route('/helloworld')
