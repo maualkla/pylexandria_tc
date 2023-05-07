@@ -63,8 +63,27 @@ def service():
 ## Login service    
 @app.route('/vlogin', methods=['POST'])
 def vlogin():
-   
-    return {"status": "true"}
+    try:
+        email = request.json['email']
+        password = request.json['password']
+        print(email, password)
+
+        user = users_ref.document(email).get()
+        print(user.to_dict())
+        print('Lets dict it')
+        user = user.to_dict()
+        ##print(usable['pcode'])
+        print(user['pcode'])
+        print(' if pass is same to pcode')
+        if user['pcode'] == password:
+            return jsonify({"status": "Successfully Logged"}), 200
+        else: 
+            return jsonify({"status": "User or password not match"}), 401
+
+        ##return jsonify(user.to_dict()),200
+        ##return {"status": "true"}
+    except Exception as e: 
+        return jsonify({"status": "Error"}), 500
 
 ## Sign up service
 @app.route('/vsignup', methods=['POST'])
@@ -72,7 +91,7 @@ def vsignup():
     try:
         email = request.json['email']
         users_ref.document(email).set(request.json)
-        return jsonify({"success": True}), 200
+        return jsonify({"success": True}), 202
     except Exception as e:
         return {"status": "An error Occurred", 
                 "error": e}
