@@ -23,7 +23,20 @@ users_ref = db.collection('users')
 # sample helloworld
 @app.route('/helloworld')
 def hello_world():
-     return 'Hello World!'
+    import requests
+
+    url = 'http://localhost:5000/vlogin'
+    data = {
+        "user": "maualkla",
+        "email": "mauricio@adminde.com",
+        "password": "helloadminde2023"
+        }
+    headers = {'Content-type': 'application/json'}
+
+    response = requests.post(url, json=data, headers=headers)
+    print(response)
+    ##print(response.json())
+    return 'Hello World!'
 
 ## @TO_BE_DELETED
 # Landing page
