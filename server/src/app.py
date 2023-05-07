@@ -24,7 +24,7 @@ users_ref = db.collection('users')
 def vlogin():
     try:
         email = request.json['email']
-        password = request.json['password']
+        password = request.json['word']
         user = users_ref.document(email).get()
         user = user.to_dict()
         if user['pcode'] == password:
