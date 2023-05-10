@@ -53,12 +53,10 @@ def vtoken():
     return True
 
 
-
-
 ## API Status
 @app.route('/status')
 def status():
-    return "Running fine"
+    return "<p>App Status: <msrkup style='color:green'>Running fine</markup></p>"
 
 
 ########################################
