@@ -18,6 +18,7 @@ cred = credentials.Certificate('key.json')
 default_app = initialize_app(cred)
 db = firestore.client()
 users_ref = db.collection('users')
+tokens_ref = db.collection('tokens')
 
 ## Login service    
 @app.route('/vlogin', methods=['POST'])
@@ -39,16 +40,49 @@ def vlogin():
 def vsignup():
     try:
         email = request.json['email']
+        userId = idGenerator()
         users_ref.document(email).set(request.json)
         return jsonify({"success": True}), 202
     except Exception as e:
         return {"status": "An error Occurred", 
                 "error": e}
 
+## Generate a token.
+@app.route('/vauth', methods=['POST'])
+def vtoken():
+    return True
+
+
+
+
 ## API Status
 @app.route('/status')
 def status():
     return "Running fine"
+
+
+########################################
+### Helpers ############################
+########################################
+
+## return String (lenght)
+def randomString(length):
+    import random, string
+    output_str = ''.join(random.choice(string.ascii_letters) for i in range(length))
+    return output_str
+
+## return userId
+def idGenerator():
+    from datetime import datetime
+    now = datetime.now()
+    userId = now.strftime("%d%m%YH%M%S")
+    userId = userId + randomString(5)
+    return userId
+
+## token generator
+def tokenGenerator(userId):
+    
+    return True
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
