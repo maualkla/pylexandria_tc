@@ -40,9 +40,28 @@ def vlogin():
 def vsignup():
     try:
         email = request.json['email']
-        userId = idGenerator()
-        users_ref.document(email).set(request.json)
-        return jsonify({"success": True}), 202
+        user = users_ref.document(email).get()
+        user = user.to_dict()
+        if user == None:
+            pwrd = hash(request.json['pcode'])
+            objpay = {
+                "activate": True,
+                "alias": request.json['alias'],
+                "birthdate": request.json['birthdate'],
+                "email": request.json['email'],
+                "fname": request.json['fname'],
+                "pcode": pwrd,
+                "phone": request.json['phone'],
+                "pin": request.json['pin'],
+                "plan": request.json['plan'],
+                "postalCode": request.json['postalCode'],
+                "terms": request.json['terms'],
+                "type": request.json['type']
+            }
+            print(users_ref.document(email).set(objpay))
+            return jsonify({"success": True}), 202
+        else:
+            return jsonify({"error": True, "errorMessage": "Email already registered" }), 409
     except Exception as e:
         return {"status": "An error Occurred", 
                 "error": e}
@@ -78,8 +97,10 @@ def idGenerator():
     return userId
 
 ## token generator
-def tokenGenerator(userId):
-    
+def tokenGenerator(user, ilimited):
+    token = idGenerator()
+    if ilimited == False:
+        ilimited = False
     return True
 
 if __name__ == '__main__':
