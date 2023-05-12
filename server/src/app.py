@@ -28,10 +28,16 @@ def vlogin():
         password = request.json['word']
         user = users_ref.document(email).get()
         user = user.to_dict()
+        print("user: " + email + " pword: " + password)
         if user['pcode'] == password:
-            return jsonify({"status": "Successfully Logged"}), 200
+            print("Go to token generator")
+            token = tokenGenerator(email, False)
+            print("token returned")
+            print(token)
+            return jsonify(token), 200
+            ##return jsonify({"status": "success"}), 200
         else: 
-            return jsonify({"status": "User or password not match"}), 401
+            return jsonify({"status": "User or password is incorrect"}), 401
     except Exception as e: 
         return jsonify({"status": "Error"}), 500
 
@@ -59,7 +65,7 @@ def vsignup():
                 "type": request.json['type']
             }
             print(users_ref.document(email).set(objpay))
-            return jsonify({"success": True}), 202
+            return jsonify(objpay), 202
         else:
             return jsonify({"error": True, "errorMessage": "Email already registered" }), 409
     except Exception as e:
@@ -69,7 +75,8 @@ def vsignup():
 ## Generate a token.
 @app.route('/vauth', methods=['POST'])
 def vtoken():
-    return True
+    vauth = tokenValidator(request.json['user'], request.json['id'])
+    return vauth.to_dict()
 
 
 ## API Status
@@ -93,15 +100,50 @@ def idGenerator():
     from datetime import datetime
     now = datetime.now()
     userId = now.strftime("%d%m%YH%M%S")
-    userId = userId + randomString(5)
+    userId = randomString(2) + userId + randomString(10)
     return userId
 
 ## token generator
 def tokenGenerator(user, ilimited):
-    token = idGenerator()
-    if ilimited == False:
-        ilimited = False
-    return True
+    try:
+        from datetime import datetime, timedelta
+        current_date_time = datetime.now()
+        token = idGenerator()
+        if ilimited:
+            new_date_time = current_date_time + timedelta(days=180)
+        else:
+            new_date_time = current_date_time + timedelta(hours=72)
+        new_date_time = new_date_time.strftime("%d%m%YH%M%S")
+        print("date: "+new_date_time)
+        tobj = {
+            "id" : token,
+            "expire" : new_date_time,
+            "user": user
+        }
+        print("inside tokenGenerator")
+        print(tobj)
+        print(tokens_ref.document(token).set(tobj))
+        return tobj
+    except Exception as e:
+        return {"status": "An error Occurred", 
+                "error": e}
+
+## Token validation
+def tokenValidator(user, vtoken):
+    print("Entramos en token validator")
+    print("token: "+vtoken+" user: "+user)
+    vauth = tokens_ref.document(vtoken).get()
+    ###vauth.to_dict()
+    
+    print(vauth)
+    if vauth != None:
+        objauth = vauth.to_dict()
+        print("date to expire.")
+        print(objauth['expire'])
+        return jsonify({"status": "valid token"}), 200
+    else:
+        return jsonify({"status": "invalid token"}), 401
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
