@@ -30,6 +30,15 @@ def vlogin():
         user = user.to_dict()
         print("user: " + email + " pword: " + password + " request.pword: " + request.json['pcode'])
         if user['pcode'] == password:
+            print(" GET TOKENS ")
+            exists = False
+            tokensitos = tokens_ref.where('user', '==', email)
+            for tok in tokensitos.stream():
+                print(f"{tok.id} => {tok.to_dict()}")
+                exists = True
+                deleteToken(tok.id)
+            ##print(tokensitos.to_dict())
+            print(" THOSE WHERE THE TOKENS")
             print("Go to token generator")
             token = tokenGenerator(email, False)
             print("token returned")
@@ -81,7 +90,7 @@ def vtoken():
 ## API Status
 @app.route('/status')
 def status():
-    return "<p>App Status: <msrkup style='color:green'>Running fine</markup></p>"
+    return "<p>App Status: <markup style='color:green'>Running fine</markup></p>"
 
 
 ########################################
