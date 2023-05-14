@@ -28,8 +28,8 @@ def vlogin():
         password = request.json['pcode']
         user = users_ref.document(email).get()
         user = user.to_dict()
-        print("user: " + email + " pword: " + password + " request.pword: " + request.json['pcode'])
         if user['pcode'] == password:
+            print("user: " + email + " pword: " + user['pcode'] + " request.pword: " + request.json['pcode'])
             print(" GET TOKENS ")
             exists = False
             tokensitos = tokens_ref.where('user', '==', email)
