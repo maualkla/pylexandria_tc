@@ -111,7 +111,9 @@ def tokenGenerator(user, ilimited):
         if ilimited:
             new_date_time = current_date_time + timedelta(days=180)
         else:
-            new_date_time = current_date_time ##+ timedelta(hours=72)
+            new_date_time = current_date_time + timedelta(hours=72)
+        print(" creation date: ")
+        print(new_date_time)
         new_date_time = new_date_time.strftime("%d%m%YH%M%S")
         print("date: "+new_date_time)
         tobj = {
@@ -144,10 +146,13 @@ def tokenValidator(user, vtoken):
             objauth = vauth.to_dict()
             expire_date = objauth['expire']
             print("date to expire.")
-            print(objauth['expire'])
             new_expire_date = datetime.strptime(expire_date, '%d%m%YH%M%S')
             print("current date: " + str(type(new_current_date_time)) + " expired_date: " + str(type(new_expire_date)))
-            if new_current_date_time.date() > new_expire_date.date():
+            print("current date: ")
+            print(new_current_date_time)
+            print(" expire_date: ")
+            print(new_expire_date)
+            if new_current_date_time.date() < new_expire_date.date():
                 return jsonify({"status": "valid"})
             else: 
                 ## delete token
