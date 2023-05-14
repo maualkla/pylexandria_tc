@@ -25,10 +25,10 @@ tokens_ref = db.collection('tokens')
 def vlogin():
     try:
         email = request.json['email']
-        password = request.json['word']
+        password = request.json['pcode']
         user = users_ref.document(email).get()
         user = user.to_dict()
-        print("user: " + email + " pword: " + password)
+        print("user: " + email + " pword: " + password + " request.pword: " + request.json['pcode'])
         if user['pcode'] == password:
             print("Go to token generator")
             token = tokenGenerator(email, False)
@@ -49,7 +49,7 @@ def vsignup():
         user = users_ref.document(email).get()
         user = user.to_dict()
         if user == None:
-            pwrd = hash(request.json['pcode'])
+            pwrd = request.json['pcode'] ##hash(request.json['pcode'])
             objpay = {
                 "activate": True,
                 "alias": request.json['alias'],
@@ -76,7 +76,7 @@ def vsignup():
 @app.route('/vauth', methods=['POST'])
 def vtoken():
     vauth = tokenValidator(request.json['user'], request.json['id'])
-    return vauth.to_dict()
+    return vauth
 
 
 ## API Status
@@ -112,7 +112,7 @@ def tokenGenerator(user, ilimited):
         if ilimited:
             new_date_time = current_date_time + timedelta(days=180)
         else:
-            new_date_time = current_date_time + timedelta(hours=72)
+            new_date_time = current_date_time ##+ timedelta(hours=72)
         new_date_time = new_date_time.strftime("%d%m%YH%M%S")
         print("date: "+new_date_time)
         tobj = {
@@ -130,6 +130,11 @@ def tokenGenerator(user, ilimited):
 
 ## Token validation
 def tokenValidator(user, vtoken):
+    from datetime import datetime
+    current_date_time = datetime.now()
+    current_date_time = current_date_time.strftime("%d%m%YH%M%S")
+    new_current_date_time = datetime.strptime(current_date_time, '%d%m%YH%M%S')
+
     print("Entramos en token validator")
     print("token: "+vtoken+" user: "+user)
     vauth = tokens_ref.document(vtoken).get()
@@ -138,11 +143,17 @@ def tokenValidator(user, vtoken):
     print(vauth)
     if vauth != None:
         objauth = vauth.to_dict()
+        expire_date = objauth['expire']
         print("date to expire.")
         print(objauth['expire'])
-        return jsonify({"status": "valid token"}), 200
+        new_expire_date = datetime.strptime(expire_date, '%d%m%YH%M%S')
+        print("current date: " + str(type(new_current_date_time)) + " expired_date: " + str(type(new_expire_date)))
+        if new_current_date_time.date() > new_expire_date.date():
+            return jsonify({"status": "valid token"})
+        else: 
+            return jsonify({"status": "Token expired"})        
     else:
-        return jsonify({"status": "invalid token"}), 401
+        return jsonify({"status": "invalid token"})
 
 
 if __name__ == '__main__':
