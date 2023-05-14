@@ -69,8 +69,7 @@ def vsignup():
         else:
             return jsonify({"error": True, "errorMessage": "Email already registered" }), 409
     except Exception as e:
-        return {"status": "An error Occurred", 
-                "error": e}
+        return {"status": "An error Occurred", "error": e}
 
 ## Generate a token.
 @app.route('/vauth', methods=['POST'])
@@ -125,36 +124,53 @@ def tokenGenerator(user, ilimited):
         print(tokens_ref.document(token).set(tobj))
         return tobj
     except Exception as e:
-        return {"status": "An error Occurred", 
-                "error": e}
+        return {"status": "An error Occurred", "error": e}
 
 ## Token validation
 def tokenValidator(user, vtoken):
-    from datetime import datetime
-    current_date_time = datetime.now()
-    current_date_time = current_date_time.strftime("%d%m%YH%M%S")
-    new_current_date_time = datetime.strptime(current_date_time, '%d%m%YH%M%S')
+    try:
+        from datetime import datetime
+        current_date_time = datetime.now()
+        current_date_time = current_date_time.strftime("%d%m%YH%M%S")
+        new_current_date_time = datetime.strptime(current_date_time, '%d%m%YH%M%S')
 
-    print("Entramos en token validator")
-    print("token: "+vtoken+" user: "+user)
-    vauth = tokens_ref.document(vtoken).get()
-    ###vauth.to_dict()
-    
-    print(vauth)
-    if vauth != None:
-        objauth = vauth.to_dict()
-        expire_date = objauth['expire']
-        print("date to expire.")
-        print(objauth['expire'])
-        new_expire_date = datetime.strptime(expire_date, '%d%m%YH%M%S')
-        print("current date: " + str(type(new_current_date_time)) + " expired_date: " + str(type(new_expire_date)))
-        if new_current_date_time.date() > new_expire_date.date():
-            return jsonify({"status": "valid token"})
+        print("Entramos en token validator")
+        print("token: "+vtoken+" user: "+user)
+        vauth = tokens_ref.document(vtoken).get()
+        ###vauth.to_dict()
+        
+        print(vauth)
+        if vauth != None:
+            objauth = vauth.to_dict()
+            expire_date = objauth['expire']
+            print("date to expire.")
+            print(objauth['expire'])
+            new_expire_date = datetime.strptime(expire_date, '%d%m%YH%M%S')
+            print("current date: " + str(type(new_current_date_time)) + " expired_date: " + str(type(new_expire_date)))
+            if new_current_date_time.date() > new_expire_date.date():
+                return jsonify({"status": "valid"})
+            else: 
+                ## delete token
+                print("go to delete token")
+                deleteToken(vtoken)
+                return jsonify({"status": "expired"})        
+        else:
+            return jsonify({"status": "invalid token"})
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
+
+## Delete Token
+def deleteToken(idTok):
+    try:
+        print(" in deleting token: ")
+        if tokens_ref.document(idTok).delete():
+            print("token deleted")
+            return True
         else: 
-            return jsonify({"status": "Token expired"})        
-    else:
-        return jsonify({"status": "invalid token"})
-
+            print("token not deleted")
+            return False
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
