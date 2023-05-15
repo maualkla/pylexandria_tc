@@ -8,7 +8,10 @@
 ## Imports
 from flask import Flask, jsonify, request, render_template
 from firebase_admin import credentials, firestore, initialize_app
-import os 
+import os, rsa
+
+## Initiate Public and private key
+publicKey, privateKey = rsa.newkeys(512)
 
 ## Initialize Flask App
 app = Flask(__name__)
@@ -23,30 +26,38 @@ tokens_ref = db.collection('tokens')
 ## Login service    
 @app.route('/vlogin', methods=['POST'])
 def vlogin():
-    try:
+    try:        
         email = request.json['email']
         password = request.json['pcode']
         user = users_ref.document(email).get()
         user = user.to_dict()
-        if user['pcode'] == password:
-            print("user: " + email + " pword: " + user['pcode'] + " request.pword: " + request.json['pcode'])
-            print(" GET TOKENS ")
-            exists = False
-            tokensitos = tokens_ref.where('user', '==', email)
-            for tok in tokensitos.stream():
-                print(f"{tok.id} => {tok.to_dict()}")
-                exists = True
-                deleteToken(tok.id)
-            ##print(tokensitos.to_dict())
-            print(" THOSE WHERE THE TOKENS")
-            print("Go to token generator")
-            token = tokenGenerator(email, False)
-            print("token returned")
-            print(token)
-            return jsonify(token), 200
-            ##return jsonify({"status": "success"}), 200
-        else: 
-            return jsonify({"status": "User or password is incorrect"}), 401
+        if user != None: 
+            encr_req = encrypt(password)
+            print(" Encrupted request password: ")
+            print(encr_req)
+            print(" firestore DB pwrd: ")
+            print(user['pcode'])
+            if user['pcode'] == encr_req:
+                print("user: " + email + " pword: " + user['pcode'] + " request.pword: " + request.json['pcode'])
+                print(" GET TOKENS ")
+                exists = False
+                tokensitos = tokens_ref.where('user', '==', email)
+                for tok in tokensitos.stream():
+                    print(f"{tok.id} => {tok.to_dict()}")
+                    exists = True
+                    deleteToken(tok.id)
+                ##print(tokensitos.to_dict())
+                print(" THOSE WHERE THE TOKENS")
+                print("Go to token generator")
+                token = tokenGenerator(email, False)
+                print("token returned")
+                print(token)
+                return jsonify(token), 200
+                ##return jsonify({"status": "success"}), 200
+            else: 
+                return jsonify({"status": "User or password is incorrect"}), 401
+        else:
+            return jsonify({"status": "User not yet registered"}), 404
     except Exception as e: 
         return jsonify({"status": "Error"}), 500
 
@@ -54,11 +65,18 @@ def vlogin():
 @app.route('/vsignup', methods=['POST'])
 def vsignup():
     try:
+        print(">>> Sign Up Service: ")
+        print(request.json['email'])
         email = request.json['email']
         user = users_ref.document(email).get()
-        user = user.to_dict()
-        if user == None:
-            pwrd = request.json['pcode'] ##hash(request.json['pcode'])
+        ##user = user.to_dict()
+        if user != None:
+            print(request.json['pcode'])
+            _pcode = request.json['pcode']
+            print(" User exist: ")
+            pwrd = encrypt(_pcode)
+            print(" request password encrypted: ")
+            print(pwrd)
             objpay = {
                 "activate": True,
                 "alias": request.json['alias'],
@@ -73,8 +91,11 @@ def vsignup():
                 "terms": request.json['terms'],
                 "type": request.json['type']
             }
-            print(users_ref.document(email).set(objpay))
-            return jsonify(objpay), 202
+            print(objpay)
+            response = users_ref.document(email).set(objpay)
+            print(response)
+            print( ">>> Sending response 202")
+            return jsonify({"Status":"Success"}), 202 ##jsonify(objpay), 202
         else:
             return jsonify({"error": True, "errorMessage": "Email already registered" }), 409
     except Exception as e:
@@ -185,6 +206,24 @@ def deleteToken(idTok):
             return False
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
+
+## Encrypt
+def encrypt(_string):
+    
+    message = _string
+    encMessage = rsa.encrypt(message.encode(), publicKey)
+    print("original string: ", message)
+    print("encrypted string: ", encMessage)
+    decMessage = rsa.decrypt(encMessage, privateKey).decode()
+    print("decrypted string: ", decMessage)
+    return encMessage
+
+## Decrypt
+def decrypt(_string):
+    message = _string
+    decMessage = rsa.decrypt(message, privateKey).decode()
+    print("decrypted string: ", decMessage)
+    return decMessage
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
