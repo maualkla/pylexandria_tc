@@ -220,42 +220,20 @@ def deleteToken(idTok):
 
 ## Encrypt
 def encrypt(_string):
-    """ 
-    ## old code TBD
-    message = _string
-    encMessage = rsa.encrypt(message.encode(), publicKey)
-    print("original string: ", message)
-    print("encrypted string: ", encMessage)
-    decMessage = rsa.decrypt(encMessage, privateKey).decode()
-    print("decrypted string: ", decMessage)
-    """
-    try:
-        print("entramos en encrypt V2: "+_string)
-        ##bc_salt = app.config['CONF_SALT_KEY']##.encode('utf-8')
-        sample_salt = bcrypt.gensalt()
-        save_salt = sample_salt.decode('utf-8')
-        print("smaple salt")
-        print(save_salt)
-        print("-------")
-       
+    try:    
         bc_salt = app.config['CONF_SALT_KEY']
         salt = bc_salt.encode('utf-8')
-        print(" enviromental Salt: ")
-        print(salt)
         bytes_pwd = _string.encode('utf-8')
         hashed_pwd = bcrypt.hashpw(bytes_pwd, salt)
-        print(hashed_pwd)
-        print("out from encrypt service. bye <3 ")
+        print(" >> You have enjoyed the encrypt service by encrypt() come back soon. bye <3 ")
         return hashed_pwd
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
 
 ## Decrypt
 def decrypt(_string):
-    message = _string
-    decMessage = rsa.decrypt(message, privateKey).decode()
-    print("decrypted string: ", decMessage)
-    return decMessage
+    
+    return False
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
