@@ -30,7 +30,9 @@ tokens_ref = db.collection('tokens')
 ## Login service    
 @app.route('/vlogin', methods=['POST'])
 def vlogin():
+    print(" Login??")
     try:        
+        print("Entramos en login")
         email = request.json['email']
         password = request.json['pcode']
         user = users_ref.document(email).get()
@@ -38,11 +40,16 @@ def vlogin():
         if user != None: 
             encr_req = encrypt(password)
             print(" Encrupted request password: ")
-            print(encr_req)
+            requ = encr_req.decode('utf-8')
+            print(requ)
+            print(type(requ))
             print(" firestore DB pwrd: ")
-            print(user['pcode'])
-            if user['pcode'] == encr_req:
-                print("user: " + email + " pword: " + user['pcode'] + " request.pword: " + request.json['pcode'])
+            fire = user['pcode'].decode('utf-8')
+            print(fire)
+            print(type(fire))
+            if requ == fire:##user['pcode'] == encr_req:
+                print("ADENTRO!!!!")
+                print("user: " + email + " pword: " + requ + " request.pword: " + fire)
                 print(" GET TOKENS ")
                 exists = False
                 tokensitos = tokens_ref.where('user', '==', email)
@@ -63,7 +70,7 @@ def vlogin():
         else:
             return jsonify({"status": "User not yet registered"}), 404
     except Exception as e: 
-        return jsonify({"status": "Error"}), 500
+        return {"status": "An error Occurred", "error": e}
 
 ## Sign up service
 @app.route('/vsignup', methods=['POST'])
@@ -222,11 +229,26 @@ def encrypt(_string):
     decMessage = rsa.decrypt(encMessage, privateKey).decode()
     print("decrypted string: ", decMessage)
     """
-
-    bc_salt = app.config['CONF_SALT_KEY']
-    hashed_pwd = bcrypt.hashpw(_string, bc_salt)
-
-    return hashed_pwd
+    try:
+        print("entramos en encrypt V2: "+_string)
+        ##bc_salt = app.config['CONF_SALT_KEY']##.encode('utf-8')
+        sample_salt = bcrypt.gensalt()
+        save_salt = sample_salt.decode('utf-8')
+        print("smaple salt")
+        print(save_salt)
+        print("-------")
+       
+        bc_salt = app.config['CONF_SALT_KEY']
+        salt = bc_salt.encode('utf-8')
+        print(" enviromental Salt: ")
+        print(salt)
+        bytes_pwd = _string.encode('utf-8')
+        hashed_pwd = bcrypt.hashpw(bytes_pwd, salt)
+        print(hashed_pwd)
+        print("out from encrypt service. bye <3 ")
+        return hashed_pwd
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
 
 ## Decrypt
 def decrypt(_string):
