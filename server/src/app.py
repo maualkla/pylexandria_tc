@@ -9,7 +9,7 @@
 from flask import Flask, jsonify, request, render_template
 from firebase_admin import credentials, firestore, initialize_app
 from config import Config
-import os, rsa
+import os, rsa, bcrypt
 
 ## Initiate Public and private key
 publicKey, privateKey = rsa.newkeys(512)
@@ -115,8 +115,7 @@ def vtoken():
 ## API Status
 @app.route('/status')
 def status():
-    app_salt = app.config['CONF_SALT_KEY']
-    return "<p>App Status: <markup style='color:green'>Running fine</markup></p> salt: "+app_salt
+    return "<p>App Status: <markup style='color:green'>Running fine</markup></p>"
 
 
 ########################################
@@ -214,14 +213,20 @@ def deleteToken(idTok):
 
 ## Encrypt
 def encrypt(_string):
-    
+    """ 
+    ## old code TBD
     message = _string
     encMessage = rsa.encrypt(message.encode(), publicKey)
     print("original string: ", message)
     print("encrypted string: ", encMessage)
     decMessage = rsa.decrypt(encMessage, privateKey).decode()
     print("decrypted string: ", decMessage)
-    return encMessage
+    """
+
+    bc_salt = app.config['CONF_SALT_KEY']
+    hashed_pwd = bcrypt.hashpw(_string, bc_salt)
+
+    return hashed_pwd
 
 ## Decrypt
 def decrypt(_string):
