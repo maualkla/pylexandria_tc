@@ -1,1 +1,3 @@
 /server/src/key.json
+/server/src/config.env
+/server/src/config.py

@@ -8,6 +8,7 @@
 ## Imports
 from flask import Flask, jsonify, request, render_template
 from firebase_admin import credentials, firestore, initialize_app
+from config import Config
 import os, rsa
 
 ## Initiate Public and private key
@@ -15,6 +16,9 @@ publicKey, privateKey = rsa.newkeys(512)
 
 ## Initialize Flask App
 app = Flask(__name__)
+
+## Setup env vars
+app.config.from_object(Config)
 
 ## Initialize Firestone DB
 cred = credentials.Certificate('key.json')
@@ -111,7 +115,8 @@ def vtoken():
 ## API Status
 @app.route('/status')
 def status():
-    return "<p>App Status: <markup style='color:green'>Running fine</markup></p>"
+    app_salt = app.config['CONF_SALT_KEY']
+    return "<p>App Status: <markup style='color:green'>Running fine</markup></p> salt: "+app_salt
 
 
 ########################################
