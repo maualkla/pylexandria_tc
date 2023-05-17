@@ -183,7 +183,9 @@ def tokenValidator(user, vtoken):
         ###vauth.to_dict()
         
         print(vauth)
+        print(type(vauth))
         if vauth != None:
+            print("serializable expired date: ")
             objauth = vauth.to_dict()
             expire_date = objauth['expire']
             print("date to expire.")
