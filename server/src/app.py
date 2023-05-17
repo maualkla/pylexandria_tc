@@ -30,41 +30,24 @@ tokens_ref = db.collection('tokens')
 ## Login service    
 @app.route('/vlogin', methods=['POST'])
 def vlogin():
-    print(" Login??")
     try:        
-        print("Entramos en login")
         email = request.json['email']
         password = request.json['pcode']
         user = users_ref.document(email).get()
         user = user.to_dict()
         if user != None: 
             encr_req = encrypt(password)
-            print(" Encrupted request password: ")
             requ = encr_req.decode('utf-8')
-            print(requ)
-            print(type(requ))
-            print(" firestore DB pwrd: ")
             fire = user['pcode'].decode('utf-8')
-            print(fire)
-            print(type(fire))
-            if requ == fire:##user['pcode'] == encr_req:
-                print("ADENTRO!!!!")
-                print("user: " + email + " pword: " + requ + " request.pword: " + fire)
-                print(" GET TOKENS ")
+            if requ == fire:
                 exists = False
                 tokensitos = tokens_ref.where('user', '==', email)
                 for tok in tokensitos.stream():
                     print(f"{tok.id} => {tok.to_dict()}")
                     exists = True
                     deleteToken(tok.id)
-                ##print(tokensitos.to_dict())
-                print(" THOSE WHERE THE TOKENS")
-                print("Go to token generator")
                 token = tokenGenerator(email, False)
-                print("token returned")
-                print(token)
                 return jsonify(token), 200
-                ##return jsonify({"status": "success"}), 200
             else: 
                 return jsonify({"status": "User or password is incorrect"}), 401
         else:
@@ -76,18 +59,11 @@ def vlogin():
 @app.route('/vsignup', methods=['POST'])
 def vsignup():
     try:
-        print(">>> Sign Up Service: ")
-        print(request.json['email'])
         email = request.json['email']
         user = users_ref.document(email).get()
-        ##user = user.to_dict()
         if user != None:
-            print(request.json['pcode'])
             _pcode = request.json['pcode']
-            print(" User exist: ")
             pwrd = encrypt(_pcode)
-            print(" request password encrypted: ")
-            print(pwrd)
             objpay = {
                 "activate": True,
                 "alias": request.json['alias'],
@@ -102,10 +78,7 @@ def vsignup():
                 "terms": request.json['terms'],
                 "type": request.json['type']
             }
-            print(objpay)
             response = users_ref.document(email).set(objpay)
-            print(response)
-            print( ">>> Sending response 202")
             return jsonify({"Status":"Success"}), 202 ##jsonify(objpay), 202
         else:
             return jsonify({"error": True, "errorMessage": "Email already registered" }), 409
@@ -131,17 +104,23 @@ def status():
 
 ## return String (lenght)
 def randomString(length):
-    import random, string
-    output_str = ''.join(random.choice(string.ascii_letters) for i in range(length))
-    return output_str
+    try:
+        import random, string
+        output_str = ''.join(random.choice(string.ascii_letters) for i in range(length))
+        return output_str
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
 
 ## return userId
 def idGenerator():
-    from datetime import datetime
-    now = datetime.now()
-    userId = now.strftime("%d%m%YH%M%S")
-    userId = randomString(2) + userId + randomString(10)
-    return userId
+    try:
+        from datetime import datetime
+        now = datetime.now()
+        userId = now.strftime("%d%m%YH%M%S")
+        userId = randomString(2) + userId + randomString(10)
+        return userId
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
 
 ## token generator
 def tokenGenerator(user, ilimited):
