@@ -153,19 +153,16 @@ def tokenGenerator(user, ilimited):
             new_date_time = current_date_time + timedelta(days=180)
         else:
             new_date_time = current_date_time + timedelta(hours=72)
-        print(" creation date: ")
-        print(new_date_time)
         new_date_time = new_date_time.strftime("%d%m%YH%M%S")
-        print("date: "+new_date_time)
         tobj = {
             "id" : token,
             "expire" : new_date_time,
             "user": user
         }
-        print("inside tokenGenerator")
-        print(tobj)
-        print(tokens_ref.document(token).set(tobj))
-        return tobj
+        if tokens_ref.document(token).set(tobj):
+            return tobj
+        else: 
+            return {"status": "Error", "errorStatus": "An error ocurred while creating the token, try again."}
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
 
@@ -176,30 +173,14 @@ def tokenValidator(user, vtoken):
         current_date_time = datetime.now()
         current_date_time = current_date_time.strftime("%d%m%YH%M%S")
         new_current_date_time = datetime.strptime(current_date_time, '%d%m%YH%M%S')
-
-        print("Entramos en token validator")
-        print("token: "+vtoken+" user: "+user)
         vauth = tokens_ref.document(vtoken).get()
-        ###vauth.to_dict()
-        
-        print(vauth)
-        print(type(vauth))
         if vauth != None:
-            print("serializable expired date: ")
             objauth = vauth.to_dict()
             expire_date = objauth['expire']
-            print("date to expire.")
             new_expire_date = datetime.strptime(expire_date, '%d%m%YH%M%S')
-            print("current date: " + str(type(new_current_date_time)) + " expired_date: " + str(type(new_expire_date)))
-            print("current date: ")
-            print(new_current_date_time)
-            print(" expire_date: ")
-            print(new_expire_date)
             if new_current_date_time.date() < new_expire_date.date():
                 return jsonify({"status": "valid"})
             else: 
-                ## delete token
-                print("go to delete token")
                 deleteToken(vtoken)
                 return jsonify({"status": "expired"})        
         else:
@@ -210,12 +191,9 @@ def tokenValidator(user, vtoken):
 ## Delete Token
 def deleteToken(idTok):
     try:
-        print(" in deleting token: ")
         if tokens_ref.document(idTok).delete():
-            print("token deleted")
             return True
         else: 
-            print("token not deleted")
             return False
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
@@ -227,7 +205,6 @@ def encrypt(_string):
         salt = bc_salt.encode('utf-8')
         bytes_pwd = _string.encode('utf-8')
         hashed_pwd = bcrypt.hashpw(bytes_pwd, salt)
-        print(" >> You have enjoyed the encrypt service by encrypt() come back soon. bye <3 ")
         return hashed_pwd
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
