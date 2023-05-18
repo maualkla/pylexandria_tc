@@ -84,11 +84,14 @@ def vsignup():
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
 
-## Generate a token.
+## Auth a token.
 @app.route('/vauth', methods=['POST'])
 def vtoken():
-    vauth = tokenValidator(request.json['user'], request.json['id'])
-    return vauth
+    try:
+        vauth = tokenValidator(request.json['user'], request.json['id'])
+        return vauth
+    except Exception as e:
+        return e
 
 ## API Status
 @app.route('/status')
