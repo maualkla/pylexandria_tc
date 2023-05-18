@@ -30,23 +30,22 @@ tokens_ref = db.collection('tokens')
 ## Login service    
 @app.route('/vlogin', methods=['POST'])
 def vlogin():
-    try:        
-        email = request.json['email']
-        password = request.json['pcode']
-        user = users_ref.document(email).get()
+    try:
+        lemail = request.json['email']
+        lpass = request.json['pcode']
+        user = users_ref.document(lemail).get()
         user = user.to_dict()
         if user != None: 
-            encr_req = encrypt(password)
+            encr_req = encrypt(lpass)
             requ = encr_req.decode('utf-8')
             fire = user['pcode'].decode('utf-8')
             if requ == fire:
                 exists = False
-                tokensitos = tokens_ref.where('user', '==', email)
+                tokensitos = tokens_ref.where('user', '==', lemail)
                 for tok in tokensitos.stream():
-                    print(f"{tok.id} => {tok.to_dict()}")
                     exists = True
                     deleteToken(tok.id)
-                token = tokenGenerator(email, False)
+                token = tokenGenerator(lemail, False)
                 return jsonify(token), 200
             else: 
                 return jsonify({"status": "User or password is incorrect"}), 401
@@ -103,10 +102,11 @@ def status():
 ########################################
 
 ## return String (lenght)
-def randomString(length):
+def randomString(_length):
     try:
+        print(" >> randomString() helper.")
         import random, string
-        output_str = ''.join(random.choice(string.ascii_letters) for i in range(length))
+        output_str = ''.join(random.choice(string.ascii_letters) for i in range(_length))
         return output_str
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
@@ -114,6 +114,7 @@ def randomString(length):
 ## return userId
 def idGenerator():
     try:
+        print(" >> idGenerator() helper.")
         from datetime import datetime
         now = datetime.now()
         userId = now.strftime("%d%m%YH%M%S")
@@ -123,12 +124,13 @@ def idGenerator():
         return {"status": "An error Occurred", "error": e}
 
 ## token generator
-def tokenGenerator(user, ilimited):
+def tokenGenerator(_user, _ilimited):
     try:
+        print(" >> tokenGenerator() helper.")
         from datetime import datetime, timedelta
         current_date_time = datetime.now()
         token = idGenerator()
-        if ilimited:
+        if _ilimited:
             new_date_time = current_date_time + timedelta(days=180)
         else:
             new_date_time = current_date_time + timedelta(hours=72)
@@ -136,7 +138,7 @@ def tokenGenerator(user, ilimited):
         tobj = {
             "id" : token,
             "expire" : new_date_time,
-            "user": user
+            "user": _user
         }
         if tokens_ref.document(token).set(tobj):
             return tobj
@@ -146,13 +148,14 @@ def tokenGenerator(user, ilimited):
         return {"status": "An error Occurred", "error": e}
 
 ## Token validation
-def tokenValidator(user, vtoken):
+def tokenValidator(_user, _token):
     try:
+        print(" >> tokenValidator() helper.")
         from datetime import datetime
         current_date_time = datetime.now()
         current_date_time = current_date_time.strftime("%d%m%YH%M%S")
         new_current_date_time = datetime.strptime(current_date_time, '%d%m%YH%M%S')
-        vauth = tokens_ref.document(vtoken).get()
+        vauth = tokens_ref.document(_token).get()
         if vauth != None:
             objauth = vauth.to_dict()
             expire_date = objauth['expire']
@@ -168,9 +171,10 @@ def tokenValidator(user, vtoken):
         return {"status": "An error Occurred", "error": e}
 
 ## Delete Token
-def deleteToken(idTok):
+def deleteToken(_id):
     try:
-        if tokens_ref.document(idTok).delete():
+        print(" >> deleteToken() helper.")
+        if tokens_ref.document(_id).delete():
             return True
         else: 
             return False
@@ -180,6 +184,7 @@ def deleteToken(idTok):
 ## Encrypt
 def encrypt(_string):
     try:    
+        print(" >> encrypt() helper.")
         bc_salt = app.config['CONF_SALT_KEY']
         salt = bc_salt.encode('utf-8')
         bytes_pwd = _string.encode('utf-8')
