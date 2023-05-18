@@ -90,7 +90,6 @@ def vtoken():
     vauth = tokenValidator(request.json['user'], request.json['id'])
     return vauth
 
-
 ## API Status
 @app.route('/status')
 def status():
@@ -157,14 +156,17 @@ def tokenValidator(_user, _token):
         new_current_date_time = datetime.strptime(current_date_time, '%d%m%YH%M%S')
         vauth = tokens_ref.document(_token).get()
         if vauth != None:
-            objauth = vauth.to_dict()
-            expire_date = objauth['expire']
-            new_expire_date = datetime.strptime(expire_date, '%d%m%YH%M%S')
-            if new_current_date_time.date() < new_expire_date.date():
-                return jsonify({"status": "valid"})
-            else: 
-                deleteToken(vtoken)
-                return jsonify({"status": "expired"})        
+            try:
+                objauth = vauth.to_dict()
+                expire_date = objauth['expire']
+                new_expire_date = datetime.strptime(expire_date, '%d%m%YH%M%S')
+                if new_current_date_time.date() < new_expire_date.date():
+                    return jsonify({"status": "valid"})
+                else: 
+                    deleteToken(vtoken)
+                    return jsonify({"status": "expired"})
+            except Exception as e:
+                return {"status": "error"}      
         else:
             return jsonify({"status": "invalid token"})
     except Exception as e:
