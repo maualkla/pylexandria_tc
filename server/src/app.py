@@ -9,7 +9,7 @@
 from flask import Flask, jsonify, request, render_template
 from firebase_admin import credentials, firestore, initialize_app
 from config import Config
-import os, rsa, bcrypt
+import os, rsa, bcrypt, base64
 
 ## Initiate Public and private key
 publicKey, privateKey = rsa.newkeys(512)
@@ -65,6 +65,9 @@ def login():
             ## save parameters into local vars
             l_user = request.args.get('u')
             l_pass = request.args.get('p')
+            print(l_pass)
+            l_pass = b64Decode(l_pass)
+            print(l_pass)
             ## go to firestore and get user with l_user id
             user = users_ref.document(l_user).get().to_dict()
             ## if user not found, user will = None and will send 404, else it will continue
@@ -130,17 +133,32 @@ def vsignup():
 
 ## Auth a token.
 @app.route('/vauth', methods=['POST'])
-def vtoken():
+def vauth():
     try:
         vauth = tokenValidator(request.json['user'], request.json['id'])
         return vauth
     except Exception as e:
-        return e
+        return {"status": "An error Occurred", "error": e}
 
 ## API Status
 @app.route('/status')
 def status():
     return "<p>App Status: <markup style='color:green'>Running fine</markup></p>"
+
+## Encode token.
+@app.route('/encode', methods=['GET'])
+def encode():
+    try:
+        if request.args.get('_string'):
+            b64 = b64Encode(request.args.get('_string'))
+            print(b64)
+            dec = b64Decode(b64)
+            print(dec)
+            return jsonify({"status": "correct"}), 200
+        else:
+            return jsonify({"status", "error"}), 400
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
 
 
 ########################################
@@ -210,7 +228,7 @@ def tokenValidator(_user, _token):
                 if new_current_date_time.date() < new_expire_date.date():
                     return jsonify({"status": "valid"})
                 else: 
-                    deleteToken(vtoken)
+                    deleteToken(_token)
                     return jsonify({"status": "expired"})
             except Exception as e:
                 return {"status": "error"}      
@@ -258,6 +276,29 @@ def trxGenerator():
         return _trxId
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
+    
+## Base64 encode
+def b64Encode(_string):
+    try:
+        print(" >> b64Encode() helper.")
+        _out = base64.b64encode(_string.encode('utf-8'))
+        _r_out = str(_out, "utf-8")
+        print(_r_out)
+        return _r_out
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
+
+## Base64 decode
+def b64Decode(_string):
+    try:
+        print(" >> b64Decode() helper.")
+        print(_string)
+        _out = base64.b64decode(_string).decode('utf-8')
+        print(_out)
+        return _out
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
