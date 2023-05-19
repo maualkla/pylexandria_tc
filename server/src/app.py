@@ -283,7 +283,6 @@ def b64Encode(_string):
         print(" >> b64Encode() helper.")
         _out = base64.b64encode(_string.encode('utf-8'))
         _r_out = str(_out, "utf-8")
-        print(_r_out)
         return _r_out
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
@@ -292,9 +291,7 @@ def b64Encode(_string):
 def b64Decode(_string):
     try:
         print(" >> b64Decode() helper.")
-        print(_string)
         _out = base64.b64decode(_string).decode('utf-8')
-        print(_out)
         return _out
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
