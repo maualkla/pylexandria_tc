@@ -53,6 +53,14 @@ def vlogin():
             return jsonify({"status": "User not yet registered"}), 404
     except Exception as e: 
         return {"status": "An error Occurred", "error": e}
+    
+## Login deployment service
+@app.route("/login", methods=['GET'])
+def login():
+    print("/login")
+    print(request.args.get('user'))
+    print(request.args.get('pass'))
+    return 500
 
 ## Sign up service
 @app.route('/vsignup', methods=['POST'])
