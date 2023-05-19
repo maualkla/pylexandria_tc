@@ -85,8 +85,12 @@ def login():
                         deleteToken(_tok.id)
                     ## generates token with user, send False flag, to get a token valid for 72 hours, True for 180 days
                     _token = tokenGenerator(l_user, False)
+                    _out_object = {
+                        "userToken": _token['id'],
+                        "expiracyDate": _token['expire']
+                    }
                     ## return _token generated before and 200 code.
-                    return jsonify(_token), 200
+                    return jsonify(_out_object), 200
                 else:
                     return jsonify({"status": "Not Authorized, review user or password"}), 401
             else:
@@ -179,8 +183,8 @@ def tokenGenerator(_user, _ilimited):
         new_date_time = new_date_time.strftime("%d%m%YH%M%S")
         tobj = {
             "id" : token,
-            "expire" : new_date_time##,
-            ##"user": _user
+            "expire" : new_date_time,
+            "user": _user
         }
         if tokens_ref.document(token).set(tobj):
             return tobj
