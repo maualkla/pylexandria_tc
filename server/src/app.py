@@ -65,16 +65,14 @@ def login():
             ## save parameters into local vars
             l_user = request.args.get('u')
             l_pass = request.args.get('p')
-            print(l_pass)
             l_pass = b64Decode(l_pass)
-            print(l_pass)
             ## go to firestore and get user with l_user id
             user = users_ref.document(l_user).get().to_dict()
             ## if user not found, user will = None and will send 404, else it will continue
             if user != None:
                 ## encrypt and decode reqpass
                 _requ = encrypt(l_pass).decode('utf-8')
-                _fire = user['pcode'].decode('utf-8')
+                _fire = user['pass'].decode('utf-8')
                 ## validate if both pass are same and continue, else return 401
                 if _requ == _fire:
                     ## define exist flag to false
@@ -88,12 +86,8 @@ def login():
                         deleteToken(_tok.id)
                     ## generates token with user, send False flag, to get a token valid for 72 hours, True for 180 days
                     _token = tokenGenerator(l_user, False)
-                    _out_object = {
-                        "userToken": _token['id'],
-                        "expiracyDate": _token['expire']
-                    }
                     ## return _token generated before and 200 code.
-                    return jsonify(_out_object), 200
+                    return jsonify(_token), 200
                 else:
                     return jsonify({"status": "Not Authorized, review user or password"}), 401
             else:
@@ -105,18 +99,25 @@ def login():
 @app.route('/vsignup', methods=['POST'])
 def vsignup():
     try:
-        email = request.json['email']
-        user = users_ref.document(email).get()
-        if user != None:
-            _pcode = request.json['pcode']
-            pwrd = encrypt(_pcode)
+        s_email = request.json['email']
+        print(s_email)
+        user = users_ref.document(s_email).get()
+        print(user.to_dict())
+        user = user.to_dict()
+        if user == None:
+            _pcode = request.json['pass']
+            print(_pcode)
+            _pcode = b64Decode(_pcode)
+            print(_pcode)
+            _pwrd = encrypt(_pcode)
+            print(_pwrd)
             objpay = {
                 "activate": True,
-                "alias": request.json['alias'],
-                "birthdate": request.json['birthdate'],
+                "username": request.json['username'],
+                "bday": request.json['bday'],
                 "email": request.json['email'],
                 "fname": request.json['fname'],
-                "pcode": pwrd,
+                "pass": _pwrd,
                 "phone": request.json['phone'],
                 "pin": request.json['pin'],
                 "plan": request.json['plan'],
@@ -124,7 +125,9 @@ def vsignup():
                 "terms": request.json['terms'],
                 "type": request.json['type']
             }
-            response = users_ref.document(email).set(objpay)
+            print(objpay)
+            response = users_ref.document(s_email).set(objpay)
+            print(response)
             return jsonify({"Status":"Success"}), 202 ##jsonify(objpay), 202
         else:
             return jsonify({"error": True, "errorMessage": "Email already registered" }), 409
@@ -135,7 +138,7 @@ def vsignup():
 @app.route('/vauth', methods=['POST'])
 def vauth():
     try:
-        vauth = tokenValidator(request.json['user'], request.json['id'])
+        vauth = tokenValidator(request.json['username'], request.json['id'])
         return vauth
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
@@ -202,7 +205,7 @@ def tokenGenerator(_user, _ilimited):
         tobj = {
             "id" : token,
             "expire" : new_date_time,
-            "user": _user
+            "username": _user
         }
         if tokens_ref.document(token).set(tobj):
             return tobj
