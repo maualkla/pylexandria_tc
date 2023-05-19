@@ -57,10 +57,42 @@ def vlogin():
 ## Login deployment service
 @app.route("/login", methods=['GET'])
 def login():
-    print("/login")
-    print(request.args.get('user'))
-    print(request.args.get('pass'))
-    return 500
+    try:
+        ### validate parameters
+        if 'u' not in request.args or 'p' not in request.args:
+            return jsonify({"status": "Missing required fields"}), 400
+        else: 
+            ## save parameters into local vars
+            l_user = request.args.get('u')
+            l_pass = request.args.get('p')
+            ## go to firestore and get user with l_user id
+            user = users_ref.document(l_user).get().to_dict()
+            ## if user not found, user will = None and will send 404, else it will continue
+            if user != None:
+                ## encrypt and decode reqpass
+                _requ = encrypt(l_pass).decode('utf-8')
+                _fire = user['pcode'].decode('utf-8')
+                ## validate if both pass are same and continue, else return 401
+                if _requ == _fire:
+                    ## define exist flag to false
+                    _exists = False
+                    ## search in firestore from tokens of currrent user
+                    _tokens = tokens_ref.where('user', '==', l_user)
+                    ## for each token returned
+                    for _tok in _tokens.stream():
+                        ## if inside, _exists = true and delete current token
+                        _exists = True
+                        deleteToken(_tok.id)
+                    ## generates token with user, send False flag, to get a token valid for 72 hours, True for 180 days
+                    _token = tokenGenerator(l_user, False)
+                    ## return _token generated before and 200 code.
+                    return jsonify(_token), 200
+                else:
+                    return jsonify({"status": "Not Authorized, review user or password"}), 401
+            else:
+                return jsonify({"status": "User not yet registered"}), 404
+    except Exception as e: 
+        return {"status": "An error Occurred", "error": e}
 
 ## Sign up service
 @app.route('/vsignup', methods=['POST'])
@@ -147,8 +179,8 @@ def tokenGenerator(_user, _ilimited):
         new_date_time = new_date_time.strftime("%d%m%YH%M%S")
         tobj = {
             "id" : token,
-            "expire" : new_date_time,
-            "user": _user
+            "expire" : new_date_time##,
+            ##"user": _user
         }
         if tokens_ref.document(token).set(tobj):
             return tobj
@@ -210,6 +242,18 @@ def encrypt(_string):
 def decrypt(_string):
     
     return False
+
+## Transaction Number Generator
+def trxGenerator():
+    try:
+        print(" >> trxGenerator() helper.")
+        from datetime import datetime
+        _now = datetime.now()
+        _dateGen = _now.strftime("%d%m%YH%M%S")
+        _trxId = randomString(2) + _dateGen + randomString(20)
+        return _trxId
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
