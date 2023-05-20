@@ -26,35 +26,9 @@ default_app = initialize_app(cred)
 db = firestore.client()
 users_ref = db.collection('users')
 tokens_ref = db.collection('tokens')
-
-## Login service    
-@app.route('/vlogin', methods=['POST'])
-def vlogin():
-    try:
-        lemail = request.json['email']
-        lpass = request.json['pcode']
-        user = users_ref.document(lemail).get()
-        user = user.to_dict()
-        if user != None: 
-            encr_req = encrypt(lpass)
-            requ = encr_req.decode('utf-8')
-            fire = user['pcode'].decode('utf-8')
-            if requ == fire:
-                exists = False
-                tokensitos = tokens_ref.where('user', '==', lemail)
-                for tok in tokensitos.stream():
-                    exists = True
-                    deleteToken(tok.id)
-                token = tokenGenerator(lemail, False)
-                return jsonify(token), 200
-            else: 
-                return jsonify({"status": "User or password is incorrect"}), 401
-        else:
-            return jsonify({"status": "User not yet registered"}), 404
-    except Exception as e: 
-        return {"status": "An error Occurred", "error": e}
+trx_ref = db.collection('transactions')
     
-## Login deployment service
+## Login service
 @app.route("/login", methods=['GET'])
 def login():
     try:
@@ -100,17 +74,12 @@ def login():
 def vsignup():
     try:
         s_email = request.json['email']
-        print(s_email)
         user = users_ref.document(s_email).get()
-        print(user.to_dict())
         user = user.to_dict()
         if user == None:
             _pcode = request.json['pass']
-            print(_pcode)
             _pcode = b64Decode(_pcode)
-            print(_pcode)
             _pwrd = encrypt(_pcode)
-            print(_pwrd)
             objpay = {
                 "activate": True,
                 "username": request.json['username'],
@@ -125,12 +94,13 @@ def vsignup():
                 "terms": request.json['terms'],
                 "type": request.json['type']
             }
-            print(objpay)
-            response = users_ref.document(s_email).set(objpay)
-            print(response)
-            return jsonify({"Status":"Success"}), 202 ##jsonify(objpay), 202
+            _tempdate = str(currentDate())
+            if users_ref.document(s_email).set(objpay):
+                return jsonify({"trxId": trxGenerator(_tempdate,s_email)}), 202 ##jsonify(objpay), 202
+            else:
+                return jsonify({"status": "Error while creating user. "}), 500
         else:
-            return jsonify({"error": True, "errorMessage": "Email already registered" }), 409
+            return jsonify({"status": "Email already registered" }), 409
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
 
@@ -182,9 +152,7 @@ def randomString(_length):
 def idGenerator():
     try:
         print(" >> idGenerator() helper.")
-        from datetime import datetime
-        now = datetime.now()
-        userId = now.strftime("%d%m%YH%M%S")
+        userId = currentDate()
         userId = randomString(2) + userId + randomString(10)
         return userId
     except Exception as e:
@@ -269,13 +237,29 @@ def decrypt(_string):
     return False
 
 ## Transaction Number Generator
-def trxGenerator():
+def trxGenerator(_date, _user):
     try:
         print(" >> trxGenerator() helper.")
         from datetime import datetime
         _now = datetime.now()
         _dateGen = _now.strftime("%d%m%YH%M%S")
         _trxId = randomString(2) + _dateGen + randomString(20)
+        _trx_obj = {
+            "date" : _date,
+            "user" : _user,
+            "id": _trxId
+        }
+        ### Por el momento no crearemos la trx por que antes necesitamos helpers para:
+        ## - Eliminar trx por usuario.
+        ## - eliminar trx por fecha
+        ## - eliminar todas las transacciones.
+        ## @TODO
+        """
+        if trx_ref.document(_trxId).set(_trx_obj):
+            return _trxId
+        else: 
+            return False
+        """
         return _trxId
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
@@ -296,6 +280,17 @@ def b64Decode(_string):
         print(" >> b64Decode() helper.")
         _out = base64.b64decode(_string).decode('utf-8')
         return _out
+    except Exception as e:
+        return {"status": "An error Occurred", "error": e}
+
+## Current date: 
+def currentDate():
+    try:
+        print(" >> currrentDate() helper.")
+        from datetime import datetime
+        _now = datetime.now()
+        _now = _now.strftime("%d%m%YH%M%S")
+        return _now
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
 
