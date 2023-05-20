@@ -70,37 +70,56 @@ def login():
         return {"status": "An error Occurred", "error": e}
 
 ## Sign up service
-@app.route('/vsignup', methods=['POST'])
-def vsignup():
+@app.route('/signup', methods=['POST'])
+def signup():
     try:
-        s_email = request.json['email']
-        user = users_ref.document(s_email).get()
-        user = user.to_dict()
-        if user == None:
-            _pcode = request.json['pass']
-            _pcode = b64Decode(_pcode)
-            _pwrd = encrypt(_pcode)
-            objpay = {
-                "activate": True,
-                "username": request.json['username'],
-                "bday": request.json['bday'],
-                "email": request.json['email'],
-                "fname": request.json['fname'],
-                "pass": _pwrd,
-                "phone": request.json['phone'],
-                "pin": request.json['pin'],
-                "plan": request.json['plan'],
-                "postalCode": request.json['postalCode'],
-                "terms": request.json['terms'],
-                "type": request.json['type']
-            }
-            _tempdate = str(currentDate())
-            if users_ref.document(s_email).set(objpay):
-                return jsonify({"trxId": trxGenerator(_tempdate,s_email)}), 202 ##jsonify(objpay), 202
+        ## Validate required values, first creating a list of all required
+        req_fields = ['username', 'bday', 'fname', 'pass', 'phone', 'pin', 'plan', 'postalCode', 'terms', 'type']
+        ## go and iterate to find all of them, if not _go will be false
+        _go = True
+        for req_value in req_fields:
+            if req_value not in request.json:
+                _not = False
+
+        ## if go, start the sign up flow, else 400 code to indicate a bad request.
+        if _go:
+            ## Get email from request.json
+            s_email = request.json['email']
+            ## Query email to see if the user is yet created.
+            user = users_ref.document(s_email).get()
+            user = user.to_dict()
+            ## if user == None means user is not yet created, so flow continues, else return 409 indicating email already registered.
+            if user == None:
+                ## get pass from payload and decode 64 and then encrypt
+                _pcode = request.json['pass']
+                _pcode = b64Decode(_pcode)
+                _pwrd = encrypt(_pcode)
+                ## Create object to create the new user.
+                objpay = {
+                    "activate": True,
+                    "username": request.json['username'],
+                    "bday": request.json['bday'],
+                    "email": request.json['email'],
+                    "fname": request.json['fname'],
+                    "pass": _pwrd,
+                    "phone": request.json['phone'],
+                    "pin": request.json['pin'],
+                    "plan": request.json['plan'],
+                    "postalCode": request.json['postalCode'],
+                    "terms": request.json['terms'],
+                    "type": request.json['type']
+                }
+                ## Get current date
+                _tempdate = str(currentDate())
+                ## send new user to be created, if created return 202 code and trxId code, else return 500 error while creating 
+                if users_ref.document(s_email).set(objpay):
+                    return jsonify({"trxId": trxGenerator(_tempdate,s_email)}), 202
+                else:
+                    return jsonify({"status": "Error while creating user. "}), 500
             else:
-                return jsonify({"status": "Error while creating user. "}), 500
-        else:
-            return jsonify({"status": "Email already registered" }), 409
+                return jsonify({"status": "Email already registered" }), 409
+        else: 
+            return jsonify({"status": "Missing required fields"}), 400
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
 
