@@ -111,7 +111,7 @@ def signup():
                 }
                 ## Get current date
                 _tempdate = str(currentDate())
-                ## send new user to be created, if created return 202 code and trxId code, else return 500 error while creating 
+                ## send new user to be created, if created return 202 code and trxId code, else return 500 error while creating
                 if users_ref.document(s_email).set(objpay):
                     return jsonify({"trxId": trxGenerator(_tempdate,s_email)}), 202
                 else:
