@@ -133,7 +133,7 @@ def vauth():
         return {"status": "An error Occurred", "error": e}
 
 ## API Status
-@app.route('/status')
+@app.route('/')
 def status():
     return "<p>App Status: <markup style='color:green'>Running fine</markup></p>"
 
@@ -151,6 +151,7 @@ def encode():
             return jsonify({"status", "error"}), 400
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
+    
 
 
 ########################################
