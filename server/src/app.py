@@ -79,7 +79,7 @@ def signup():
         _go = True
         for req_value in req_fields:
             if req_value not in request.json:
-                _not = False
+                _go = False
 
         ## if go, start the sign up flow, else 400 code to indicate a bad request.
         if _go:
