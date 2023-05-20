@@ -119,7 +119,7 @@ def signup():
             else:
                 return jsonify({"status": "Email already registered" }), 409
         else: 
-            return jsonify({"status": "Missing required fields"}), 400
+            return jsonify({"status": "Review request payload"}), 400
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
 
