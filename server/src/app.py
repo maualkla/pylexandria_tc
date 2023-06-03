@@ -52,7 +52,7 @@ def login():
                     ## define exist flag to false
                     _exists = False
                     ## search in firestore from tokens of currrent user
-                    _tokens = tokens_ref.where('user', '==', l_user)
+                    _tokens = tokens_ref.where('username', '==', l_user)
                     ## for each token returned
                     for _tok in _tokens.stream():
                         ## if inside, _exists = true and delete current token
