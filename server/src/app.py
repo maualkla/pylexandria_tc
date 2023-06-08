@@ -128,7 +128,7 @@ def signup():
 def vauth():
     try:
         vauth = tokenValidator(request.json['username'], request.json['id'])
-        return vauth
+        return vauth, 200
     except Exception as e:
         return {"status": "An error Occurred", "error": e}
 
